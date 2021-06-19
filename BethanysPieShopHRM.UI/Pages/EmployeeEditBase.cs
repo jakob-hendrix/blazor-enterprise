@@ -20,7 +20,7 @@ namespace BethanysPieShopHRM.UI.Pages
         [Inject]
         public IJobCategoryDataService JobCategoryDataService { get; set; }
 
-        [Inject] 
+        [Inject]
         public NavigationManager NavigationManager { get; set; }
 
         [Parameter]
