@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BethanysPieShopHRM.UI.Components;
 using BethanysPieShopHRM.UI.Services;
 using BethanysPieShopHRM.Shared;
+using BethanysPieShopHRM.UI.Interfaces;
 using Microsoft.AspNetCore.Components;
 
 namespace BethanysPieShopHRM.UI.Pages
@@ -22,6 +23,9 @@ namespace BethanysPieShopHRM.UI.Pages
 
         [Inject]
         public NavigationManager NavigationManager { get; set; }
+
+        [Inject]
+        public IExpenseApprovalService ExpenseApprovalService { get; set; }
 
         public Expense Expense { get; set; } = new Expense();
 
@@ -45,7 +49,7 @@ namespace BethanysPieShopHRM.UI.Pages
             if(expenseId != 0)
             {
                 Expense = await ExpenseDataService.GetExpenseById(int.Parse(ExpenseId));
-            } 
+            }
             else
             {
                 Expense = new Expense() { EmployeeId = 1, CurrencyId = 1, Status = ExpenseStatus.Open, ExpenseType = ExpenseType.Other };
@@ -62,61 +66,14 @@ namespace BethanysPieShopHRM.UI.Pages
 
             var employee = await EmployeeDataService.GetEmployeeDetails(Expense.EmployeeId);
 
-            if (!employee.IsFTE)
-            {
-                switch (Expense.ExpenseType)
-                {
-                    case ExpenseType.Conference:
-                        Expense.Status = ExpenseStatus.Denied;
-                        break;
-                    case ExpenseType.Hotel:
-                        Expense.Status = ExpenseStatus.Denied;
-                        break;
-                    case ExpenseType.Travel:
-                        Expense.Status = ExpenseStatus.Denied;
-                        break;
-                    case ExpenseType.Food:
-                        Expense.Status = ExpenseStatus.Denied;
-                        break;
-                }
-            }
-            else
-            {
-                if (Expense.ExpenseType == ExpenseType.Food && Expense.Amount > 250)
-                {
-                    Expense.Status = ExpenseStatus.Denied;
-                }
+            // We can deny certain expenses automatically
+            Expense.Status = ExpenseApprovalService.GetExpenseStatus(Expense, employee);
 
-                if (Expense.Amount > 5000)
-                {
-                    Expense.Status = ExpenseStatus.Denied;
-                }
-            }
-
-            if (employee.JobCategory.JobCategoryName == "Sales" && Expense.ExpenseType == ExpenseType.Gift)
-            {
-                Expense.Status = ExpenseStatus.Denied;
-            }
-
-            if (employee.IsOPEX)
-            {
-                switch (Expense.ExpenseType)
-                {
-                    case ExpenseType.Conference:
-                        Expense.Status = ExpenseStatus.Denied;
-                        break;
-                    case ExpenseType.Training:
-                        Expense.Status = ExpenseStatus.Denied;
-                        break;
-                }
-            }
-
-
-            if (Expense.ExpenseId == 0) // New 
+            if (Expense.ExpenseId == 0) // New
             {
                 await ExpenseDataService.AddExpense(Expense);
                 NavigationManager.NavigateTo("/expenses");
-            } 
+            }
             else
             {
                 await ExpenseDataService.UpdateExpense(Expense);

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BethanysPieShopHRM.UI.Services;
 using BethanysPieShopHRM.UI.Data;
+using BethanysPieShopHRM.UI.Interfaces;
 
 namespace BethanysPieShopHRM.UI
 {
@@ -24,10 +25,10 @@ namespace BethanysPieShopHRM.UI
         {
             services.AddRazorPages();
             services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; });
-            
+
             services.AddScoped<HttpClient>(s =>
             {
-                var client = new HttpClient { BaseAddress = new System.Uri("https://localhost:44340/") }; 
+                var client = new HttpClient { BaseAddress = new System.Uri("https://localhost:44340/") };
                 return client;
             });
 
@@ -39,6 +40,8 @@ namespace BethanysPieShopHRM.UI
             services.AddTransient<IEmailService, EmailService>();
             services.AddTransient<ISurveyDataService, SurveyDataService>();
             services.AddTransient<ICurrencyDataService, CurrencyDataService>();
+            services.AddTransient<IExpenseApprovalService, ExpenseApprovalService>();
+            services.AddBlazorContextMenu();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
